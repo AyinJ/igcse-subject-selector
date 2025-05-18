@@ -1,13 +1,14 @@
+from openai import OpenAI
 import streamlit as st
-import openai
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Load OpenAI client using secret key stored securely in Streamlit Cloud
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# 🎓 Title of the app
+# Streamlit app title and instructions
 st.title("🎓 IGCSE Subject Selector")
 st.write("Answer a few simple questions to get personalized subject recommendations.")
 
-# 📥 Questions for your son
+# Questions for the student
 strengths = st.text_input("💪 What subjects or topics are you good at or enjoy?")
 dislikes = st.text_input("❌ Are there subjects you dislike or want to avoid?")
 learning_style = st.text_input("🧠 How do you prefer to learn? (e.g. visual, hands-on, reading)")
@@ -17,7 +18,7 @@ career_interest = st.text_input(
     help="E.g. doctor, engineer, artist, YouTuber, business owner, not sure, etc."
 )
 
-# 🧠 AI generates subject suggestions
+# When the button is clicked, AI generates subject recommendations
 if st.button("Get Subject Recommendations"):
     prompt = f"""
 You are an academic advisor for IGCSE students. A student is unsure of their career path and is choosing subjects.
@@ -33,10 +34,14 @@ Format:
 - Subject: [Name] – Reason: [short reason]
 """
 
-    response = openai.ChatCompletion.create(
+    # OpenAI generates the response
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}]
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
     )
 
+    # Display the result in the app
     st.subheader("📚 Recommended IGCSE Subjects")
     st.write(response.choices[0].message.content.strip())
